@@ -39,6 +39,7 @@ If the interviewer gives you one minute, say this:
 9. [Deep dive D — Payment, and the race against the clock](#9-deep-dive-d--payment-and-the-race-against-the-clock)
 10. [Deep dive E — Events, outbox and duplicate delivery](#10-deep-dive-e--events-outbox-and-duplicate-delivery)
 11. [Deep dive F — Surviving noon (scale, hot sections, degradation)](#11-deep-dive-f--surviving-noon)
+    - [Alternatives you should be able to discuss](#11b-alternatives-you-should-be-able-to-discuss) · [Interview cheat card](#11c-interview-cheat-card)
 12. [Consistency map](#12-consistency-map)
 13. [Failure modes cheat-sheet](#13-failure-modes-cheat-sheet)
 14. [Observability](#14-observability)
@@ -131,7 +132,7 @@ Notes worth saying:
 The **database holds the truth**. The **hold is temporary, so it lives in memory with a timer**, never in the database.
 
 ```sql
--- One row per seat per show. 'status' is a cache of the truth for fast reads; bookings is authoritative.
+-- One row per seat per show (the inventory). Availability is DERIVED: a seat is free if it has no confirmed booking and no live hold.
 CREATE TABLE seats (
   show_id    BIGINT       NOT NULL,
   seat_id    VARCHAR(8)   NOT NULL,        -- e.g. 'C-14'
@@ -188,6 +189,10 @@ SET hold:7710:C-14 <value> NX EX 480      # NX = "only if it doesn't exist" → 
 ---
 
 ## 5. High-level design
+
+<p align="center"><img src="../assets/sd07-architecture.svg" alt="Architecture at a glance" width="100%"></p>
+
+The same system as an interactive-style diagram you can zoom (Mermaid):
 
 ```mermaid
 flowchart LR
@@ -389,7 +394,11 @@ return 1
 ### What if the Hold Store dies?
 
 - Holds in it are lost, **but nothing is double-sold**, because the DB still refuses a second booking.
-- Run Redis with a **replica that takes over**. Worst case: a few fans are asked to pick seats again.
+- Run Redis with a **replica that takes over**. Replication is asynchronous, so a failover can lose a few just-acknowledged holds, and two fans may briefly believe they hold the same seat. The DB `UNIQUE` guard turns that into a clean "just taken" at confirm time, not a double sale. Worst case: a few fans are asked to pick seats again.
+- **Redis Cluster note:** a multi-key Lua script needs all keys in one hash slot. Use a hash tag, e.g. `hold:{7710:C}:C-14`, so every seat in a section lives together.
+
+> [!NOTE]
+> **Redis is not the bottleneck.** ~2,000 holds/s is a rounding error for one primary (tens of thousands of ops/s). You shard holds for *blast radius and hot sections*, not for raw throughput.
 
 > [!NOTE]
 > **Why not just use a DB lock (`SELECT … FOR UPDATE`)?** It works at small scale, but at flash-sale volume lock contention on a few hot rows ties up connections and shreds throughput. A fast in-memory atomic claim in front keeps most contention off the database.
@@ -440,7 +449,7 @@ sequenceDiagram
     S->>R: Guard 1 — conditional update:<br/>set state=CONFIRMING IF hold is still mine
     alt guard 1 succeeds
         R-->>S: OK (hold pinned, short lease)
-        S->>D: Guard 2 — BEGIN; INSERT booking; INSERT outbox; COMMIT<br/>(UNIQUE still protects)
+        S->>D: Guard 2 — one transaction: INSERT booking + INSERT outbox<br/>(UNIQUE still protects)
         D-->>S: committed
         S->>R: delete hold
     else hold expired but seat still free
@@ -452,6 +461,16 @@ sequenceDiagram
 ```
 
 - **Guard 1 (atomic inside Redis):** "mark this hold as CONFIRMING **only if it's still mine**." If it succeeds, the hold is *pinned*.
+
+```lua
+-- KEYS[1] = hold key, ARGV[1] = my holdId, ARGV[2] = lease seconds
+local v = redis.call('GET', KEYS[1])
+if v == ARGV[1] then
+  redis.call('SET', KEYS[1], ARGV[1] .. ':CONFIRMING', 'EX', ARGV[2])   -- short lease: a crash can't lock the seat forever
+  return 1
+end
+return 0
+```
 - **Guard 2 (DB transaction):** insert the booking; the **UNIQUE constraint** still refuses any second booking.
 - **Hold expired but seat still free →** the system may re-claim it.
 - **Seat taken by someone else →** no booking is written; **void/refund automatically** and tell the user.
@@ -556,6 +575,39 @@ Graceful degradation, decided in advance:
 | Non-essential features stay **off** | Capacity preserved |
 
 > **Slow and honest beats fast and broken — every single time.**
+
+---
+
+## 11b. Alternatives you should be able to discuss
+
+| Option | How it works | Why not (here) | When it's fine |
+|---|---|---|---|
+| **DB row lock** (`SELECT … FOR UPDATE`) | Lock the seat row, then update | Connections pile up on hot rows; throughput collapses under a flash sale | Low-volume venues |
+| **Optimistic version column** | `UPDATE … WHERE version = ?` | Great as the safety net, but every loser still costs a DB round trip | Rare conflicts |
+| **Per-seat serialization via a queue** (partition key = seat) | One consumer decides each seat in order | Adds latency, complexity, and ordering/partition-hotness concerns | Very small inventories |
+| **Redis `SET NX EX` + DB `UNIQUE`** ⭐ | Fast atomic claim, durable judge behind it | Needs the confirm/cleanup logic of §9 | Flash sales (this design) |
+| **Distributed lock service** (ZooKeeper/etcd) | Lease-based lock per seat | Heavier and slower per claim; not needed when one primary decides | Cross-resource coordination |
+
+> [!TIP]
+> Interviewers love the *"why not X"* question. Have a one-line reason for each row above.
+
+---
+
+## 11c. Interview cheat card
+
+```text
+READ/WRITE SPLIT   edge for reads, narrow path for writes
+WAITING ROOM       admit ~2,000/s · shuffled start · signed pass · bot checks
+ONE WINNER         SET NX EX (atomic) → hold, 8 min TTL
+FINAL JUDGE        UNIQUE (show_id, seat_id) in the DB
+LOCKING            hold = pessimistic · DB constraint = optimistic
+PAYMENT            idempotency key · idempotent callbacks
+RACE AT 8:00       guard 1 (Redis CAS) → guard 2 (DB txn) → else refund
+CRASH RECOVERY     lease + reconciler checks provider AND booking
+EVENTS             outbox in the same txn · idempotent consumer by booking_id
+SCALE              pre-warm · preload edge · shed features · split hot sections
+CONSISTENCY        strong where a seat is sold · eventual elsewhere
+```
 
 ---
 
