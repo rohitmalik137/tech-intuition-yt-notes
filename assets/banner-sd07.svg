@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-label="Design a ticket booking system — BookMyShow style">
+  <defs>
+    <radialGradient id="g" cx="75%" cy="50%" r="70%"><stop offset="0" stop-color="#1b2030"/><stop offset="1" stop-color="#07090f"/></radialGradient>
+    <pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".05"/></pattern>
+  </defs>
+  <rect width="1280" height="360" fill="url(#g)"/><rect width="1280" height="360" fill="url(#p)"/>
+  <g font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif">
+    <text x="64" y="92" fill="#00e5b0" font-size="22" font-weight="700" letter-spacing="7">SYSTEM DESIGN · EPISODE 07</text>
+    <text x="64" y="176" fill="#fff" font-size="68" font-weight="800">Design a Ticket</text>
+    <text x="64" y="250" fill="#fff" font-size="68" font-weight="800">Booking System</text>
+    <text x="64" y="304" fill="#f5b301" font-size="30" font-weight="700">13 million fans · 150,000 seats · 1 seat, 1 winner</text>
+  </g>
+  <g transform="translate(900 180)">
+    <g fill="#8a8f9c" fill-opacity=".85">
+      <rect x="-150" y="-110" width="26" height="18" rx="3"/><rect x="-116" y="-122" width="26" height="18" rx="3"/><rect x="-82" y="-130" width="26" height="18" rx="3"/><rect x="-48" y="-134" width="26" height="18" rx="3"/><rect x="-14" y="-134" width="26" height="18" rx="3"/><rect x="20" y="-130" width="26" height="18" rx="3"/><rect x="54" y="-122" width="26" height="18" rx="3"/><rect x="88" y="-110" width="26" height="18" rx="3"/>
+      <rect x="-170" y="-80" width="26" height="18" rx="3"/><rect x="-136" y="-92" width="26" height="18" rx="3"/><rect x="-102" y="-100" width="26" height="18" rx="3"/><rect x="-68" y="-104" width="26" height="18" rx="3"/><rect x="-34" y="-104" width="26" height="18" rx="3"/><rect x="0" y="-100" width="26" height="18" rx="3"/><rect x="34" y="-92" width="26" height="18" rx="3"/><rect x="68" y="-80" width="26" height="18" rx="3"/><rect x="102" y="-68" width="26" height="18" rx="3"/>
+    </g>
+    <rect x="-34" y="-104" width="26" height="18" rx="3" fill="#f5b301"/>
+    <g stroke="#f5b301" stroke-opacity=".35" stroke-width="2"><path d="M-300 120L-21 -86M-240 150L-21 -86M-180 170L-21 -86M-110 180L-21 -86M-30 184L-21 -86M60 180L-21 -86"/></g>
+    <g fill="#f5b301"><rect x="-312" y="108" width="22" height="34" rx="4"/><rect x="-252" y="138" width="22" height="34" rx="4"/><rect x="-192" y="158" width="22" height="34" rx="4"/><rect x="-122" y="168" width="22" height="34" rx="4"/><rect x="-42" y="172" width="22" height="34" rx="4"/><rect x="48" y="168" width="22" height="34" rx="4"/></g>
+  </g>
+</svg>
