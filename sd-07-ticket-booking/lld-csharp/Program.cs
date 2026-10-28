@@ -1,6 +1,10 @@
 using TicketBooking;
 
 // A self-checking demo: each scenario prints PASS/FAIL. Run with:  dotnet run
+//
+// HOW TO READ THIS FILE: it uses "top-level statements" (no Main method, no class). The code simply runs
+// from top to bottom. Each `{ ... }` block below is an independent scenario with its own fresh service,
+// so one scenario can never affect another.
 var failures = 0;
 void Check(bool ok, string what) { Console.WriteLine($"{(ok ? "PASS" : "FAIL")}  {what}"); if (!ok) failures++; }
 
@@ -25,6 +29,8 @@ var weekday = new DateTime(2026, 10, 7, 14, 0, 0, DateTimeKind.Utc);   // Wednes
 var weekend = new DateTime(2026, 10, 10, 14, 0, 0, DateTimeKind.Utc);  // Saturday
 
 // 1. Two fans race for the same seat → exactly one winner.
+//    A Barrier makes both tasks WAIT until both are ready, then releases them at the same instant, so the
+//    race is real instead of "task 1 happened to finish before task 2 started".
 {
     var (svc, _, _, _, _) = Build(weekday);
     using var barrier = new Barrier(2);
@@ -35,6 +41,8 @@ var weekend = new DateTime(2026, 10, 10, 14, 0, 0, DateTimeKind.Utc);  // Saturd
 }
 
 // 2. Hundreds of racers, many seats: no seat is ever held twice.
+//    Parallel.For runs the loop body on many threads at once. ConcurrentBag is a thread-safe collection.
+//    400 people fight over 6 seats; exactly 6 must win and each seat must be won by exactly one person.
 {
     var (svc, _, _, _, _) = Build(weekday);
     var wins = new System.Collections.Concurrent.ConcurrentBag<string>();

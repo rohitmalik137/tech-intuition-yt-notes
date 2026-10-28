@@ -30,7 +30,7 @@ The video builds the **intuition**. These notes give you the **rigour**: require
 
 | # | Problem | Note | Core ideas |
 |---|---|---|---|
-| 07 | **Design a ticket booking system** (BookMyShow / Ticketmaster style) | [HLD →](sd-07-ticket-booking/README.md) · [LLD (C#) →](sd-07-ticket-booking/LLD.md) | virtual waiting room · atomic seat holds · UNIQUE as final judge · idempotent payments · outbox · hot partitions |
+| 07 | **Design a ticket booking system** (BookMyShow / Ticketmaster style) | [HLD →](sd-07-ticket-booking/HLD.md) · [LLD (C#) →](sd-07-ticket-booking/LLD.md) | virtual waiting room · atomic seat holds · UNIQUE as final judge · idempotent payments · outbox · hot partitions |
 
 *Episodes 01–06 are being backfilled in the same format.*
 

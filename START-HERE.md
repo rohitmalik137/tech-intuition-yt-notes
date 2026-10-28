@@ -66,7 +66,7 @@ Every problem folder follows the same layout so you always know where to look:
 
 ```
 sd-NN-problem/
-  README.md     HLD: requirements → numbers → API → data model → design → deep dives → failure modes → follow-ups
+  HLD.md        HLD: requirements → numbers → API → data model → design → deep dives → failure modes → follow-ups
   LLD.md        LLD: framework → class diagram → patterns → full C# code → concurrency → extensions
   lld-csharp/   the runnable project
 ```
@@ -76,4 +76,4 @@ sd-NN-problem/
 - [`fundamentals/`](fundamentals/) — the reusable knowledge (read these once, reuse everywhere)
 - [`problem-bank.md`](problem-bank.md) — what gets asked, with the building blocks each one needs
 - [`glossary.md`](glossary.md) — every term, one line each
-- [SD-07 HLD](sd-07-ticket-booking/README.md) and [SD-07 LLD](sd-07-ticket-booking/LLD.md) — the worked example
+- [SD-07 HLD](sd-07-ticket-booking/HLD.md) and [SD-07 LLD](sd-07-ticket-booking/LLD.md) — the worked example
