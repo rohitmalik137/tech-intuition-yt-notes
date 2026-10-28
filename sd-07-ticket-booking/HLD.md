@@ -47,8 +47,8 @@ If the interviewer gives you one minute, say this:
 14. [Observability](#14-observability)
 15. [Follow-up questions interviewers ask](#15-follow-up-questions-interviewers-ask)
 16. [Common mistakes](#16-common-mistakes)
-17. [Test yourself](#18-test-yourself)
-18. [How to present this in 45 minutes](#19-how-to-present-this-in-45-minutes)
+17. [Test yourself](#17-test-yourself)
+18. [How to present this in 45 minutes](#18-how-to-present-this-in-45-minutes)
 
 ---
 
@@ -741,7 +741,7 @@ Load test with a synthetic crowd at 2× expected, chaos-test Redis failover and 
 
 ---
 
-## 18. Test yourself
+## 17. Test yourself
 
 Cover the page, answer out loud, then open the fold.
 
@@ -787,7 +787,7 @@ Strong where a seat is sold (hold, bookings, payment). Eventual for the edge sea
 
 ---
 
-## 19. How to present this in 45 minutes
+## 18. How to present this in 45 minutes
 
 | Minutes | Do this |
 |---|---|
