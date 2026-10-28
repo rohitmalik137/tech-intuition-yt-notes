@@ -62,12 +62,24 @@ Reading is the slowest way to learn this. Use this loop for each problem:
 
 ## 5. How each problem note is organised
 
+**Icons used in every note**
+
+| Icon | Meaning |
+|---|---|
+| ⚡ | The short answer: say this first |
+| 🧠 | **Mentor's note**: *why* it works (the part people memorise without understanding) |
+| ✋ | **Pause and predict**: answer before opening the fold |
+| 🎤 | An **interview line** you can say almost word for word |
+| ⚠️ | A trap that costs offers |
+| 🧭 | A plain-English primer for the code |
+
+
 Every problem folder follows the same layout so you always know where to look:
 
 ```
 sd-NN-problem/
   HLD.md        HLD: requirements → numbers → API → data model → design → deep dives → failure modes → follow-ups
-  LLD.md        LLD: framework → class diagram → patterns → full C# code → concurrency → extensions
+  LLD.md        LLD (where it is a classic LLD prompt): framework → class diagram → patterns → full C# code → concurrency → extensions
   lld-csharp/   the runnable project
 ```
 

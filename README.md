@@ -31,6 +31,7 @@ The video builds the **intuition**. These notes give you the **rigour**: require
 | # | Problem | Note | Core ideas |
 |---|---|---|---|
 | 07 | **Design a ticket booking system** (BookMyShow / Ticketmaster style) | [HLD →](sd-07-ticket-booking/HLD.md) · [LLD (C#) →](sd-07-ticket-booking/LLD.md) | virtual waiting room · atomic seat holds · UNIQUE as final judge · idempotent payments · outbox · hot partitions |
+| 08 | **Design a URL shortener** (TinyURL / bit.ly style) | [HLD →](sd-08-url-shortener/HLD.md) | read-heavy design · base-62 codes · id blocks · caching · 301 vs 302 · async analytics · abuse |
 
 *Episodes 01–06 are being backfilled in the same format.*
 

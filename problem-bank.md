@@ -15,7 +15,7 @@ Status: ✅ written · 🎬 video exists · 📝 planned.
 | 05 | **File sync (Dropbox)** | Large objects | Chunking, dedupe, sync protocol, conflict handling | 🎬 note 📝 |
 | 06 | **Real-time chat (WhatsApp)** | Real-time | WebSockets, fan-out, presence, ordering, offline delivery | 🎬 note 📝 |
 | **07** | **Ticket booking (BookMyShow / Ticketmaster)** | **Contention** | **Waiting room, atomic hold, UNIQUE, idempotency, outbox** | ✅ 🎬 |
-| 08 | **URL shortener** | Read-heavy | ID generation (base62), cache, redirect latency, analytics | 📝 |
+| **08** | **URL shortener** | **Read-heavy** | **ID generation (base62, id blocks), cache, redirect latency, analytics, abuse** | ✅ [HLD](sd-08-url-shortener/HLD.md) |
 | 09 | **News feed / timeline** | Read-heavy + fan-out | Push vs pull fan-out, ranking, celebrity problem | 📝 |
 | 10 | **Distributed key-value store** (Redis/Dynamo-like) | Storage | Partitioning, replication, quorum, gossip, hinted handoff, LSM | 📝 |
 | 11 | **Distributed cache** | Storage | Eviction, consistent hashing, hot keys, invalidation | 📝 |

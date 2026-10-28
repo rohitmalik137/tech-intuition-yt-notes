@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-label="Design a URL shortener">
+  <defs>
+    <radialGradient id="g" cx="75%" cy="50%" r="70%"><stop offset="0" stop-color="#1b2030"/><stop offset="1" stop-color="#07090f"/></radialGradient>
+    <pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".05"/></pattern>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#00e5b0"/></marker>
+  </defs>
+  <rect width="1280" height="360" fill="url(#g)"/><rect width="1280" height="360" fill="url(#p)"/>
+  <g font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif">
+    <text x="64" y="92" fill="#00e5b0" font-size="22" font-weight="700" letter-spacing="7">SYSTEM DESIGN · EPISODE 08</text>
+    <text x="64" y="176" fill="#fff" font-size="68" font-weight="800">Design a URL</text>
+    <text x="64" y="250" fill="#fff" font-size="68" font-weight="800">Shortener</text>
+    <text x="64" y="304" fill="#f5b301" font-size="30" font-weight="700">100:1 reads to writes · 7 characters · 1 redirect</text>
+    <rect x="700" y="86" width="520" height="62" rx="14" fill="#12151d" stroke="#8a8f9c" stroke-opacity=".6" stroke-width="2"/>
+    <text x="724" y="125" fill="#9aa4b2" font-size="22">https://example.com/products/2026/summer-sale?utm=…</text>
+    <path d="M960 156L960 214" stroke="#00e5b0" stroke-width="4" marker-end="url(#a)"/>
+    <rect x="820" y="224" width="300" height="76" rx="16" fill="#12151d" stroke="#f5b301" stroke-width="3"/>
+    <text x="970" y="274" fill="#f5b301" font-size="36" font-weight="800" text-anchor="middle">sho.rt/aB3xY9k</text>
+  </g>
+</svg>

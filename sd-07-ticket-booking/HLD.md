@@ -47,7 +47,8 @@ If the interviewer gives you one minute, say this:
 14. [Observability](#14-observability)
 15. [Follow-up questions interviewers ask](#15-follow-up-questions-interviewers-ask)
 16. [Common mistakes](#16-common-mistakes)
-17. [How to present this in 45 minutes](#17-how-to-present-this-in-45-minutes)
+17. [Test yourself](#18-test-yourself)
+18. [How to present this in 45 minutes](#19-how-to-present-this-in-45-minutes)
 
 ---
 
@@ -740,7 +741,53 @@ Load test with a synthetic crowd at 2× expected, chaos-test Redis failover and 
 
 ---
 
-## 17. How to present this in 45 minutes
+## 18. Test yourself
+
+Cover the page, answer out loud, then open the fold.
+
+<details><summary><b>Q1.</b> Why is this a <i>contention</i> problem and not a storage problem?</summary>
+
+150,000 seats is tiny data. The difficulty is millions of people wanting the same few rows in the same seconds, and a sale that is over in about 75 seconds.
+</details>
+
+<details><summary><b>Q2.</b> What single step makes "check if free, then take it" safe?</summary>
+
+Make check-and-take **one atomic operation**: Redis `SET key value NX EX 480`. Exactly one caller creates the key; the other gets nothing back.
+</details>
+
+<details><summary><b>Q3.</b> If Redis lost every hold, could a seat be double-sold? Why not?</summary>
+
+No. The database has `UNIQUE (show_id, seat_id)` on confirmed bookings, so a second booking for the same seat fails no matter what Redis believed.
+</details>
+
+<details><summary><b>Q4.</b> Payment succeeds at 7:59 but the confirmation arrives at 8:01. Walk through what happens.</summary>
+
+Guard 1 (Redis, atomic): "set CONFIRMING only if the hold is still mine". If the hold expired and someone else owns the seat, it fails, no booking is written, and the payment is voided/refunded. If the seat is still free the system may re-claim it. If it succeeds, Guard 2 (a DB transaction) writes the booking and the outbox row.
+</details>
+
+<details><summary><b>Q5.</b> Why an outbox instead of "save booking, then publish event"?</summary>
+
+A crash between the two steps would leave a booking with no ticket ever sent (a dual write). The outbox saves the event in the **same transaction** as the booking, and a relay publishes it afterwards.
+</details>
+
+<details><summary><b>Q6.</b> The payment provider calls your callback twice. What keeps this safe?</summary>
+
+An idempotent handler keyed on the checkout/payment id: if already applied, return 200 and do nothing.
+</details>
+
+<details><summary><b>Q7.</b> What does the waiting room change about the load on the Seat Service?</summary>
+
+It turns a flood into a steady stream (about 2,000/s). The wait happens at the door, not inside the building.
+</details>
+
+<details><summary><b>Q8.</b> Where do you use strong consistency and where eventual?</summary>
+
+Strong where a seat is sold (hold, bookings, payment). Eventual for the edge seat-map snapshot, catalog pages, notifications and queue position.
+</details>
+
+---
+
+## 19. How to present this in 45 minutes
 
 | Minutes | Do this |
 |---|---|
