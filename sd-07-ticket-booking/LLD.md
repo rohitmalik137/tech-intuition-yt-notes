@@ -15,23 +15,156 @@
 4. **Holds expire lazily:** a `Held` state checks the clock when asked. No background timer needed.
 5. **Strategy + Decorator** for pricing, **Observer** for notifications, **idempotency key** for confirm.
 6. **Confirm = guard 1 (my hold still valid) → charge → guard 2 (seats confirm, then a UNIQUE check) → else refund.**
-7. Code against **interfaces** (`IClock`, `IPaymentGateway`, `IBookingRepository`) so everything is testable.
+7. In the room, code only the **spine** (§0, about 100 lines); describe the rest.
+8. Code against **interfaces** (`IClock`, `IPaymentGateway`, `IBookingRepository`) so everything is testable.
 
 ---
 
 ## Contents
+0. [The interview-sized version (start here)](#0-the-interview-sized-version-what-you-would-actually-write-in-20-minutes)
 1. [What interviewers look for](#1-what-interviewers-look-for)
 2. [A framework you can reuse for any LLD problem](#2-a-framework-you-can-reuse)
 3. [Requirements and scope](#3-requirements-and-scope)
 4. [Nouns → classes](#4-nouns--classes)
 5. [Class diagram](#5-class-diagram)
 6. [Design decisions (and what we deliberately did NOT use)](#6-design-decisions)
-7. [The code](#7-the-code)
+7. [The full reference solution](#7-the-full-reference-solution-do-not-write-this-live)
 8. [Concurrency: in-process vs distributed](#8-concurrency-in-process-vs-distributed)
 9. [Run it](#9-run-it)
 10. [Extension questions and how to answer them](#10-extension-questions)
 11. [Common mistakes](#11-common-mistakes)
 12. [Pacing a 45-minute LLD round](#12-pacing-a-45-minute-lld-round)
+
+---
+
+## 0. The interview-sized version (what you would actually write in ~20 minutes)
+
+> [!IMPORTANT]
+> **Do not write the full project in §7 in an interview.** It is a reference. In the room, code the spine below, say "pricing is a Strategy, notifications are an Observer" in a sentence each, and move on. About 100 lines, one file.
+
+What this version keeps: **one lock per seat, sorted order, all-or-nothing hold, lazy expiry, idempotent confirm.** What it skips (and you *say* you skip): pricing rules, notifications, State classes, a real repository.
+
+```csharp
+public enum SeatStatus { Available, Held, Booked }
+
+public sealed class Seat
+{
+    public string Id { get; }
+    public SeatStatus Status;           // guarded by `this` lock
+    public string? HoldId;              // who holds it
+    public DateTime HoldExpiresAt;      // lazy expiry: checked when asked, no timer thread
+    public Seat(string id) => Id = id;
+}
+
+public sealed record Hold(string HoldId, string UserId, List<string> SeatIds, DateTime ExpiresAt);
+
+public interface IPaymentGateway
+{
+    bool Charge(string idempotencyKey, decimal amount);   // must be idempotent
+    void Refund(string idempotencyKey);
+}
+
+public sealed class BookingService
+{
+    private readonly Dictionary<string, Seat> _seats;                 // seatId -> Seat (read-only after setup)
+    private readonly Dictionary<string, Hold> _holds = new();         // guarded by _holds
+    private readonly Dictionary<string, string> _confirmed = new();   // idempotencyKey -> bookingId; guarded by _holds
+    private readonly IPaymentGateway _pay;
+    private readonly Func<DateTime> _now;                             // inject time so expiry is testable
+    private readonly TimeSpan _ttl = TimeSpan.FromMinutes(8);
+
+    public BookingService(IEnumerable<Seat> seats, IPaymentGateway pay, Func<DateTime>? now = null)
+    {
+        _seats = seats.ToDictionary(s => s.Id);
+        _pay = pay;
+        _now = now ?? (() => DateTime.UtcNow);
+    }
+
+    // 1) HOLD: all-or-nothing. Lock seats in SORTED order so two overlapping requests cannot deadlock.
+    public Hold? TryHold(string userId, IEnumerable<string> seatIds)
+    {
+        var ids = seatIds.Distinct().OrderBy(x => x, StringComparer.Ordinal).ToList();
+        var seats = ids.Select(id => _seats[id]).ToList();
+        var now = _now();
+        var holdId = Guid.NewGuid().ToString("N");
+
+        return LockAll(seats, 0, () =>
+        {
+            foreach (var s in seats)                                   // check phase
+            {
+                if (s.Status == SeatStatus.Held && now >= s.HoldExpiresAt) s.Status = SeatStatus.Available; // lazy expiry
+                if (s.Status != SeatStatus.Available) return null;     // one bad seat vetoes the whole request
+            }
+            foreach (var s in seats)                                   // apply phase
+            {
+                s.Status = SeatStatus.Held; s.HoldId = holdId; s.HoldExpiresAt = now + _ttl;
+            }
+            var hold = new Hold(holdId, userId, ids, now + _ttl);
+            lock (_holds) _holds[holdId] = hold;
+            return hold;
+        });
+    }
+
+    // 2) CONFIRM: idempotent by key; re-check the hold is still mine AFTER charging; refund if not.
+    public string? Confirm(string holdId, string idempotencyKey, decimal amount)
+    {
+        lock (_holds) { if (_confirmed.TryGetValue(idempotencyKey, out var done)) return done; }   // double tap -> same answer
+        if (!_pay.Charge(idempotencyKey, amount)) { Release(holdId); return null; }                // declined -> free the seats
+
+        var hold = _holds[holdId];
+        var seats = hold.SeatIds.Select(id => _seats[id]).ToList();
+        var now = _now();
+        var ok = LockAll(seats, 0, () =>
+        {
+            if (!seats.All(s => s.Status == SeatStatus.Held && s.HoldId == holdId && now < s.HoldExpiresAt)) return false;
+            foreach (var s in seats) s.Status = SeatStatus.Booked;
+            return true;
+        });
+        if (!ok) { _pay.Refund(idempotencyKey); return null; }                                    // hold expired while paying
+
+        var bookingId = Guid.NewGuid().ToString("N");
+        lock (_holds) { _confirmed[idempotencyKey] = bookingId; _holds.Remove(holdId); }
+        return bookingId;
+    }
+
+    public void Release(string holdId)
+    {
+        Hold? hold; lock (_holds) { _holds.TryGetValue(holdId, out hold); _holds.Remove(holdId); }
+        if (hold is null) return;
+        var seats = hold.SeatIds.Select(id => _seats[id]).ToList();
+        LockAll(seats, 0, () =>
+        {
+            foreach (var s in seats) if (s.HoldId == holdId && s.Status == SeatStatus.Held) { s.Status = SeatStatus.Available; s.HoldId = null; }
+            return true;
+        });
+    }
+
+    private static T LockAll<T>(List<Seat> seats, int i, Func<T> body) =>
+        i == seats.Count ? body() : LockOne(seats, i, body);
+    private static T LockOne<T>(List<Seat> seats, int i, Func<T> body) { lock (seats[i]) return LockAll(seats, i + 1, body); }
+}
+```
+
+**Then say, out loud (this is the part that scores):**
+- *"Check-then-act is the race, so each seat has its own lock and the check and the write happen under it."*
+- *"Multi-seat requests lock in sorted order, so overlapping requests can't deadlock, and nothing is applied unless every seat is free: all-or-nothing."*
+- *"Expiry is lazy. A held seat whose time has passed counts as free when someone asks."*
+- *"Confirm re-checks the hold after the charge. If it expired while paying, I refund."*
+- *"This lock only protects one process. Across servers the claim becomes a Redis `SET NX EX`, with a DB unique constraint as the backstop."*
+
+**One test you would write (a race):**
+```csharp
+var svc = new BookingService(new[] { new Seat("A1") }, gateway);
+var results = await Task.WhenAll(
+    Task.Run(() => svc.TryHold("u1", new[] { "A1" })),
+    Task.Run(() => svc.TryHold("u2", new[] { "A1" })));
+Debug.Assert(results.Count(r => r is not null) == 1);   // exactly one winner
+```
+
+> [!NOTE]
+> This mini version was written but not compiled where these notes were authored. If you use it for practice, type it out and fix any typos; that is also good rehearsal.
+
+**If you have time left, extend in this order:** pricing as a Strategy → State pattern for the seat → notifications as an Observer → a repository interface. Each is a 2-minute verbal sketch, not extra code.
 
 ---
 
@@ -211,7 +344,10 @@ stateDiagram-v2
 
 ---
 
-## 7. The code
+## 7. The full reference solution (do not write this live)
+
+> [!WARNING]
+> This is the **complete** design: State classes, pricing strategies, observer, repository, and demo. It exists so you can see every extension in one place. In an interview you write §0, not this.
 
 > [!NOTE]
 > Full project: [`lld-csharp/`](lld-csharp/) (.NET 8). Files below are shown in dependency order. Written for .NET 8 with nullable reference types on. I could not compile it where it was written, so run `dotnet run` once (§9).

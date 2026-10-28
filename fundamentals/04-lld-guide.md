@@ -20,6 +20,18 @@ LLD rounds ask you to design **classes and interfaces** for one component and us
 > [!TIP]
 > Spend the first 10 minutes talking. Interviewers often care more about the model than the last 50 lines of code.
 
+### How much to actually write
+
+You get about 45 minutes. Plan for **~100–200 lines** of real code.
+
+| Write | Describe or stub |
+|---|---|
+| Core entities and the one tricky method (the concurrency-safe or stateful one) | Secondary features (pricing variants, notifications, reporting) |
+| Interfaces for external things (payment, clock) | Their implementations |
+| One test that proves the hard part | Full test suites |
+
+Rule: **code the hard part first**, describe the easy parts in a sentence, and say what you would add next. A small correct core beats a large unfinished one.
+
 ## 2. OOP in four lines
 
 - **Encapsulation:** hide state behind methods that protect invariants.
