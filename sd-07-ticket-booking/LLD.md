@@ -111,7 +111,7 @@ public sealed class BookingService
         lock (_holds) { if (_confirmed.TryGetValue(idempotencyKey, out var done)) return done; }   // double tap -> same answer
         if (!_pay.Charge(idempotencyKey, amount)) { Release(holdId); return null; }                // declined -> free the seats
 
-        var hold = _holds[holdId];
+        Hold hold; lock (_holds) hold = _holds[holdId];                                          // Dictionary isn't thread-safe: read under its lock
         var seats = hold.SeatIds.Select(id => _seats[id]).ToList();
         var now = _now();
         var ok = LockAll(seats, 0, () =>
