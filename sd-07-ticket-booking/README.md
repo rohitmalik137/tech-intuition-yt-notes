@@ -4,6 +4,8 @@
 
 **BookMyShow / Ticketmaster style · HLD walkthrough · Episode 07**
 
+> 💻 **Preparing for an LLD round too?** See the [LLD companion with runnable C# code](LLD.md).
+
 > 🎬 Watch the video first for the intuition, then use this page to rehearse the answer out loud.
 > *(Video link: add on upload.)*
 
