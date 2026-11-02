@@ -56,7 +56,7 @@ Reading is the slowest way to learn this. Use this loop for each problem:
 | **1** | Foundations | Read `01-hld-framework`, `02-numbers`, skim `03-building-blocks`. Learn the numbers cold. |
 | **2** | Building blocks | Work through `03-building-blocks` (caching, DB, sharding, queues, consistency). Make a one-page cheat sheet in your own words. |
 | **3** | First full problem | Do **SD-07 ticket booking** (HLD) end to end, then its **LLD**. Mock it with a friend. |
-| **4** | More problems | Next 3 from the [problem bank](problem-bank.md): pick one *read-heavy*, one *write-heavy*, one *real-time*. |
+| **4** | More problems | **SD-08 Blinkit** (contention + saga + dispatch), then the **classic URL shortener** (read-heavy). Then 1-2 more from the [problem bank](problem-bank.md). |
 | **5** | LLD depth | Read `04-lld-guide`. Code 3 LLD classics in C# (parking lot, vending machine, LRU cache). |
 | **6** | Mocks + gaps | 3 timed mocks (45 min each), record yourself, review against the "common mistakes" lists. |
 
@@ -89,3 +89,4 @@ sd-NN-problem/
 - [`problem-bank.md`](problem-bank.md) — what gets asked, with the building blocks each one needs
 - [`glossary.md`](glossary.md) — every term, one line each
 - [SD-07 HLD](sd-07-ticket-booking/HLD.md) and [SD-07 LLD](sd-07-ticket-booking/LLD.md) — the worked example
+- [SD-08 HLD](sd-08-quick-commerce/HLD.md) and [SD-08 LLD](sd-08-quick-commerce/LLD.md) — second example: saga, dispatch, real-world delivery

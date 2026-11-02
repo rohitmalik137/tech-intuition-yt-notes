@@ -15,7 +15,8 @@ Status: ✅ written · 🎬 video exists · 📝 planned.
 | 05 | **File sync (Dropbox)** | Large objects | Chunking, dedupe, sync protocol, conflict handling | 🎬 note 📝 |
 | 06 | **Real-time chat (WhatsApp)** | Real-time | WebSockets, fan-out, presence, ordering, offline delivery | 🎬 note 📝 |
 | **07** | **Ticket booking (BookMyShow / Ticketmaster)** | **Contention** | **Waiting room, atomic hold, UNIQUE, idempotency, outbox** | ✅ 🎬 |
-| **08** | **URL shortener** | **Read-heavy** | **ID generation (base62, id blocks), cache, redirect latency, analytics, abuse** | ✅ [HLD](sd-08-url-shortener/HLD.md) |
+| **08** | **Quick commerce (Blinkit / Zepto)** | **Contention + real world** | **One order = one store, conditional-UPDATE stock, saga, payment unknown, outbox, rider claim + lease** | ✅ 🎬 [HLD](sd-08-quick-commerce/HLD.md) · [LLD](sd-08-quick-commerce/LLD.md) |
+| ★ | **URL shortener** (classic) | **Read-heavy** | **ID generation (base62, id blocks), cache, redirect latency, analytics, abuse** | ✅ [HLD](classic-url-shortener/HLD.md) |
 | 09 | **News feed / timeline** | Read-heavy + fan-out | Push vs pull fan-out, ranking, celebrity problem | 📝 |
 | 10 | **Distributed key-value store** (Redis/Dynamo-like) | Storage | Partitioning, replication, quorum, gossip, hinted handoff, LSM | 📝 |
 | 11 | **Distributed cache** | Storage | Eviction, consistent hashing, hot keys, invalidation | 📝 |
@@ -34,8 +35,8 @@ Status: ✅ written · 🎬 video exists · 📝 planned.
 | 24 | **Social graph / "people you may know"** | Graph | Adjacency storage, BFS, offline compute | 📝 |
 
 ### Prepare in this order (highest return first)
-1. **Ticket booking (07)**, **payment (16)**, **flash sale (17)**: contention and money; they test your depth on correctness.
-2. **URL shortener (08)**, **feed (09)**, **cache (11)**: the most common read-heavy fundamentals.
+1. **Ticket booking (07)**, **quick commerce (08)**, **payment (16)**, **flash sale (17)**: contention and money; they test your depth on correctness.
+2. **URL shortener (★)**, **feed (09)**, **cache (11)**: the most common read-heavy fundamentals.
 3. **Chat (06)**, **notification (02)**, **messaging (04)**: queues, delivery guarantees, real-time.
 4. **KV store (10)**: a frequently reported Microsoft-style prompt; touches replication, partitioning, consistency.
 5. The rest, as time allows.
@@ -45,6 +46,7 @@ Status: ✅ written · 🎬 video exists · 📝 planned.
 | Problem | Key ideas | Status |
 |---|---|---|
 | **Movie ticket booking** | State, Strategy, Observer, atomic multi-seat hold | ✅ [LLD note](sd-07-ticket-booking/LLD.md) |
+| **Quick-commerce order flow** | Inventory reserve, versioned state machine, saga, rider claim + lease | ✅ [LLD note](sd-08-quick-commerce/LLD.md) |
 | Parking lot | Strategy (fee/spot), Factory, concurrent entry | 📝 |
 | Vending machine | State machine | 📝 |
 | Elevator system | State, Command, scheduling strategy | 📝 |

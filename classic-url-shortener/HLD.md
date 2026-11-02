@@ -1,8 +1,8 @@
-<p align="center"><img src="../assets/banner-sd08.svg" alt="Design a URL Shortener" width="100%"></p>
+<p align="center"><img src="../assets/banner-url-shortener.svg" alt="Design a URL Shortener" width="100%"></p>
 
 # Design a URL Shortener
 
-**TinyURL / bit.ly style · HLD walkthrough · Episode 08**
+**TinyURL / bit.ly style · HLD walkthrough · Classic problem (no video yet)**
 
 > 🧭 **Where this fits.** Episode 07 (ticket booking) was a *contention* problem: a few rows, millions of people. This one is the opposite shape: a **read-heavy** problem where the data is simple and the traffic is huge. If you can do both, you have covered two of the most common shapes in interviews.
 
@@ -179,7 +179,7 @@ CREATE INDEX ix_urls_owner_url ON urls (owner_id, long_url_hash);
 
 ## 5. High-level design
 
-<p align="center"><img src="../assets/sd08-architecture.svg" alt="URL shortener architecture at a glance" width="100%"></p>
+<p align="center"><img src="../assets/url-shortener-architecture.svg" alt="URL shortener architecture at a glance" width="100%"></p>
 
 The same system as a zoomable diagram:
 

@@ -86,6 +86,8 @@ One line per term, grouped by topic so you can scan a whole area at once. Deeper
 | **Single point of failure (SPOF)** | One component whose failure takes everything down |
 | **Failover** | Switching to a standby when the primary fails |
 | **Split brain** | Two nodes both believe they are the leader |
+| **RPO / RTO** | How much data you can lose (Recovery Point Objective) / how long recovery may take (Recovery Time Objective) |
+| **Dead-letter queue** | Where messages that keep failing are parked for repair instead of blocking the queue |
 
 ## Coordination
 
@@ -113,11 +115,13 @@ One line per term, grouped by topic so you can scan a whole area at once. Deeper
 | **API gateway** | Single entry point: auth, rate limit, routing |
 | **Rate limiting** | Capping requests per time window (token bucket, sliding window) |
 | **WebSocket** | Persistent two-way connection |
+| **Geohash / H3** | Ways to cut the map into cells (rectangles / hexagons) so "which area is this point in?" is a cheap lookup |
 
 ## Measuring
 
 | Term | Meaning |
 |---|---|
+| **Little's law** | Items in the system = arrival rate × time each spends there (150 orders/s × 600 s = 90,000 alive) |
 | **Latency / throughput** | Time per request / requests per second |
 | **p50 / p95 / p99** | Latency under which 50 / 95 / 99% of requests finish |
 | **SLI** | A measurement (e.g. % of requests under 200 ms) |
